@@ -113,7 +113,7 @@ app.post('/api/fetch-and-save-sheet-data', async (req, res) => {
     const { sheet_url, sheet_name } = req.body;
     
     // Call the webhook API to get sheet data
-    const webhookResponse = await fetch('http://113.160.207.71:5678/webhook/check-connection', {
+    const webhookResponse = await fetch('https://n8n-hungyen.cahy.io.vn/webhook/check-connection', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -203,7 +203,7 @@ app.post('/api/save-sheet-data', (req, res) => {
 // API endpoint to refresh data from webhook
 app.post('/api/refresh-data', async (req, res) => {
   try {
-    const webhookUrl = 'http://113.160.207.71:5678/webhook/check-connection';
+    const webhookUrl = 'https://n8n-hungyen.cahy.io.vn/webhook/check-connection';
     const requestData = {
       sheet_url: "https://docs.google.com/spreadsheets/d/1sb6lnE9yMY6Nj9H2L2clHGhX05bHXvB_1SQXuWBPsrU/edit?usp=sharing",
       sheet_name: "Trang tính1"

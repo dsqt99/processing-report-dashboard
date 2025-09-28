@@ -101,7 +101,7 @@ const Settings: React.FC = () => {
     setMessage(null);
 
     try {
-      const response = await fetch('http://113.160.207.71:5678/webhook/check-connection', {
+      const response = await fetch('https://n8n-hungyen.cahy.io.vn/webhook/check-connection', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
