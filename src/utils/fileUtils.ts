@@ -41,23 +41,8 @@ export const saveSheetInformationLog = async (sheetInfo: { sheet_url: string; sh
       }
     } catch (error) {
       console.log('Could not save to file system, data saved to localStorage only');
-      
-      // Fallback: create downloadable file for manual saving
-      const jsonContent = JSON.stringify([logEntry], null, 2);
-      const blob = new Blob([jsonContent], { type: 'application/json' });
-      const url = URL.createObjectURL(blob);
-      
-      const link = document.createElement('a');
-      link.href = url;
-      link.download = 'sheet_information.json';
-      link.style.display = 'none';
-      
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-      URL.revokeObjectURL(url);
-      
-      console.log('Sheet information file downloaded - please save to data/ directory');
+      // Removed automatic JSON download mechanism
+      // Only log the error without triggering download
     }
 
     console.log('Sheet information logged:', logEntry);

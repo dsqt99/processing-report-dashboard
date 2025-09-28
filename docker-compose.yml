@@ -1,5 +1,3 @@
-version: '3.8'
-
 services:
   # Development environment
   app-dev:
@@ -18,6 +16,7 @@ services:
       - dev
     networks:
       - app-network
+      - proxy-net
 
   # Production environment
   app-prod:
@@ -26,13 +25,14 @@ services:
       dockerfile: Dockerfile
       target: production
     ports:
-      - "80:80"
+      - "8080:80"  # Changed to avoid conflict with nginx-proxy-manager
     environment:
       - NODE_ENV=production
     profiles:
       - prod
     networks:
       - app-network
+      - proxy-net
 
   # Backend API server (if needed)
   api:
@@ -49,10 +49,13 @@ services:
       - api
     networks:
       - app-network
+      - proxy-net
 
 networks:
   app-network:
     driver: bridge
+  proxy-net:
+    external: true  # Connect to external proxy-net network from n8n folder
 
 volumes:
   node_modules:

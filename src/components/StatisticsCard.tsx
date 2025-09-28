@@ -20,44 +20,62 @@ const getIconAndColor = (type: StatisticsCardProps['type']) => {
     case 'total':
       return {
         icon: DocumentTextIcon,
-        bgColor: 'bg-gray-50',
-        iconColor: 'text-gray-600',
+        bgGradient: 'bg-gradient-to-br from-slate-50 to-gray-100',
+        iconBg: 'bg-gradient-to-br from-slate-500 to-gray-600',
+        iconColor: 'text-white',
         textColor: 'text-gray-900',
+        accentColor: 'border-slate-400',
+        shadowColor: 'shadow-slate-200/50',
       };
     case 'Đã xong':
       return {
         icon: CheckCircleIcon,
-        bgColor: 'bg-green-50',
-        iconColor: 'text-green-600',
-        textColor: 'text-green-900',
+        bgGradient: 'bg-gradient-to-br from-emerald-50 to-green-100',
+        iconBg: 'bg-gradient-to-br from-emerald-500 to-green-600',
+        iconColor: 'text-white',
+        textColor: 'text-emerald-900',
+        accentColor: 'border-emerald-400',
+        shadowColor: 'shadow-emerald-200/50',
       };
     case 'Đang thực hiện':
       return {
         icon: PlayIcon,
-        bgColor: 'bg-blue-50',
-        iconColor: 'text-blue-600',
+        bgGradient: 'bg-gradient-to-br from-blue-50 to-indigo-100',
+        iconBg: 'bg-gradient-to-br from-blue-500 to-indigo-600',
+        iconColor: 'text-white',
         textColor: 'text-blue-900',
+        accentColor: 'border-blue-400',
+        shadowColor: 'shadow-blue-200/50',
       };
     case 'Chưa bắt đầu':
       return {
         icon: ClockIcon,
-        bgColor: 'bg-gray-50',
-        iconColor: 'text-gray-600',
-        textColor: 'text-gray-900',
+        bgGradient: 'bg-gradient-to-br from-amber-50 to-yellow-100',
+        iconBg: 'bg-gradient-to-br from-amber-500 to-yellow-600',
+        iconColor: 'text-white',
+        textColor: 'text-amber-900',
+        accentColor: 'border-amber-400',
+        shadowColor: 'shadow-amber-200/50',
       };
     case 'Tạm dừng':
       return {
         icon: PauseIcon,
-        bgColor: 'bg-red-50',
-        iconColor: 'text-red-600',
-        textColor: 'text-red-900',
+        bgGradient: 'bg-gradient-to-br from-rose-50 to-red-100',
+        iconBg: 'bg-gradient-to-br from-rose-500 to-red-600',
+        iconColor: 'text-white',
+        textColor: 'text-rose-900',
+        accentColor: 'border-rose-400',
+        shadowColor: 'shadow-rose-200/50',
       };
     default:
       return {
         icon: DocumentTextIcon,
-        bgColor: 'bg-gray-50',
-        iconColor: 'text-gray-600',
+        bgGradient: 'bg-gradient-to-br from-slate-50 to-gray-100',
+        iconBg: 'bg-gradient-to-br from-slate-500 to-gray-600',
+        iconColor: 'text-white',
         textColor: 'text-gray-900',
+        accentColor: 'border-slate-400',
+        shadowColor: 'shadow-slate-200/50',
       };
   }
 };
@@ -68,31 +86,52 @@ const StatisticsCard: React.FC<StatisticsCardProps> = ({
   type, 
   isLoading = false 
 }) => {
-  const { icon: Icon, bgColor, iconColor, textColor } = getIconAndColor(type);
+  const { icon: Icon, bgGradient, iconBg, iconColor, textColor, accentColor, shadowColor } = getIconAndColor(type);
 
   return (
-    <div className="bg-white border border-gray-200 rounded-lg shadow-sm p-4">
-      <div className="flex items-center justify-between">
-        <div>
-          <div className="text-sm text-gray-600 mb-1">
-            {title}
+    <div className={`${bgGradient} border-2 ${accentColor} rounded-2xl shadow-lg ${shadowColor} p-6 transition-all duration-300 hover:scale-105 hover:shadow-xl group relative overflow-hidden`}>
+      {/* Decorative background pattern */}
+      <div className="absolute top-0 right-0 w-20 h-20 opacity-10">
+        <div className="w-full h-full bg-gradient-to-br from-white to-transparent rounded-full transform translate-x-6 -translate-y-6"></div>
+      </div>
+      
+      <div className="relative z-10">
+        <div className="flex items-start justify-between mb-4">
+          <div className="flex-1">
+            <div className="text-sm font-semibold text-gray-600 mb-2 uppercase tracking-wide">
+              {title}
+            </div>
+            {isLoading ? (
+              <div className="animate-pulse">
+                <div className="h-10 bg-white/50 rounded-lg w-20"></div>
+              </div>
+            ) : (
+              <div className={`text-3xl font-bold ${textColor} transition-all duration-300 group-hover:scale-110`}>
+                {value.toLocaleString()}
+              </div>
+            )}
           </div>
-          {isLoading ? (
-            <div className="animate-pulse">
-              <div className="h-8 bg-gray-200 rounded w-16"></div>
+          
+          <div className="flex-shrink-0 ml-4">
+            <div className={`${iconBg} p-3 rounded-xl shadow-lg transition-all duration-300 group-hover:scale-110 group-hover:rotate-6`}>
+              <Icon className={`h-7 w-7 ${iconColor}`} aria-hidden="true" />
             </div>
-          ) : (
-            <div className="text-2xl font-bold text-gray-900">
-              {value}
-            </div>
-          )}
+          </div>
         </div>
-        <div className="flex-shrink-0">
-          <Icon className={`h-6 w-6 ${iconColor}`} aria-hidden="true" />
+        
+        {/* Progress indicator for visual appeal */}
+        <div className="w-full bg-white/30 rounded-full h-1.5 overflow-hidden">
+          <div 
+            className={`h-full ${iconBg} transition-all duration-1000 ease-out`}
+            style={{ 
+              width: isLoading ? '0%' : '100%',
+              transitionDelay: isLoading ? '0ms' : '300ms'
+            }}
+          ></div>
         </div>
-       </div>
-     </div>
-   );
- };
+      </div>
+    </div>
+  );
+};
 
 export default StatisticsCard;
