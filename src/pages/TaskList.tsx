@@ -1,43 +1,22 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { 
-  MagnifyingGlassIcon,
-  FunnelIcon,
   ArrowUpIcon,
   ArrowDownIcon
 } from '@heroicons/react/24/outline';
-import { useTasks, useStore } from '../store/useStore';
+import { useStore } from '../store/useStore';
 import { Task, TaskStatus, STATUS_COLORS } from '../types';
 
 type SortField = 'ID' | 'name' | 'unit' | 'progress' | 'status';
 type SortOrder = 'asc' | 'desc';
 
-const Tasks: React.FC = () => {
-  const {
-    filteredTasks,
-    isLoading,
-    error,
-    statusFilter,
-    unitFilter,
-    searchTerm,
-    uniqueUnits,
-    setStatusFilter,
-    setUnitFilter,
-    setSearchTerm
-  } = useTasks();
-
-  const { loadTasks } = useStore();
-
+const TaskList: React.FC = () => {
+  const { tasks, isLoading, error } = useStore();
   const [sortField, setSortField] = useState<SortField>('ID');
   const [sortOrder, setSortOrder] = useState<SortOrder>('asc');
 
-  // Load tasks when component mounts
-  useEffect(() => {
-    loadTasks();
-  }, [loadTasks]);
-
   // Sort tasks
   const sortedTasks = React.useMemo(() => {
-    return [...filteredTasks].sort((a, b) => {
+    return [...tasks].sort((a, b) => {
       let aValue: any;
       let bValue: any;
 
@@ -78,7 +57,7 @@ const Tasks: React.FC = () => {
 
       return 0;
     });
-  }, [filteredTasks, sortField, sortOrder]);
+  }, [tasks, sortField, sortOrder]);
 
   const handleSort = (field: SortField) => {
     if (sortField === field) {
@@ -114,9 +93,7 @@ const Tasks: React.FC = () => {
             }}
           ></div>
         </div>
-        <span className="text-sm font-medium text-gray-900 min-w-[3rem]">
-          {progress}%
-        </span>
+        <span className="text-sm text-gray-600 min-w-[3rem]">{progress}%</span>
       </div>
     );
   };
@@ -130,86 +107,32 @@ const Tasks: React.FC = () => {
     );
   };
 
+  if (error) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-center">
+          <div className="text-red-600 text-lg font-medium mb-2">Lỗi tải dữ liệu</div>
+          <div className="text-gray-600">{error}</div>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-gray-50">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <div className="max-w-7xl mx-auto px-6 py-6">
         {/* Header */}
-        <div className="mb-8">
-          <h1 className="text-2xl font-bold text-gray-900">Danh sách công việc</h1>
-          <p className="mt-2 text-sm text-gray-600">
-            Quản lý và theo dõi chi tiết từng công việc
+        <div className="mb-6">
+          <h1 className="text-2xl font-bold text-gray-900 mb-2">
+            Danh sách công việc
+          </h1>
+          <p className="text-gray-600">
+            Hiển thị toàn bộ danh sách công việc
           </p>
         </div>
 
-        {/* Error Message */}
-        {error && (
-          <div className="mb-6 bg-red-50 border border-red-200 rounded-md p-4">
-            <div className="text-sm text-red-700">{error}</div>
-          </div>
-        )}
-
-        {/* Filters and Search */}
-        <div className="bg-white shadow rounded-lg mb-6">
-          <div className="p-6">
-            <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-              {/* Search */}
-              <div className="relative">
-                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                  <MagnifyingGlassIcon className="h-5 w-5 text-gray-400" />
-                </div>
-                <input
-                  type="text"
-                  placeholder="Tìm kiếm công việc..."
-                  className="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md leading-5 bg-white placeholder-gray-500 focus:outline-none focus:placeholder-gray-400 focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                />
-              </div>
-
-              {/* Status Filter */}
-              <div className="relative">
-                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                  <FunnelIcon className="h-5 w-5 text-gray-400" />
-                </div>
-                <select
-                  className="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md leading-5 bg-white focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
-                  value={statusFilter}
-                  onChange={(e) => setStatusFilter(e.target.value as TaskStatus | 'all')}
-                >
-                  <option value="all">Tất cả trạng thái</option>
-                  <option value="Đã xong">Đã xong</option>
-                  <option value="Đang thực hiện">Đang thực hiện</option>
-                  <option value="Chưa bắt đầu">Chưa bắt đầu</option>
-                  <option value="Tạm dừng">Tạm dừng</option>
-                </select>
-              </div>
-
-              {/* Unit Filter */}
-              <div className="relative">
-                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                  <FunnelIcon className="h-5 w-5 text-gray-400" />
-                </div>
-                <select
-                  className="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md leading-5 bg-white focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
-                  value={unitFilter}
-                  onChange={(e) => setUnitFilter(e.target.value)}
-                >
-                  <option value="all">Tất cả đơn vị</option>
-                  {uniqueUnits.map((unit) => (
-                    <option key={unit} value={unit}>
-                      {unit}
-                    </option>
-                  ))}
-                </select>
-              </div>
-
-
-            </div>
-          </div>
-        </div>
-
         {/* Tasks Table */}
-        <div className="bg-white shadow overflow-hidden sm:rounded-md">
+        <div className="bg-white shadow-sm rounded-lg overflow-hidden">
           <div className="overflow-x-auto">
             <table className="min-w-full divide-y divide-gray-200">
               <thead className="bg-gray-50">
@@ -241,8 +164,14 @@ const Tasks: React.FC = () => {
                       <SortIcon field="unit" />
                     </div>
                   </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Thời gian
+                  <th
+                    className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100"
+                    onClick={() => handleSort('progress')}
+                  >
+                    <div className="flex items-center">
+                      Tiến độ
+                      <SortIcon field="progress" />
+                    </div>
                   </th>
                   <th
                     className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100"
@@ -253,39 +182,27 @@ const Tasks: React.FC = () => {
                       <SortIcon field="status" />
                     </div>
                   </th>
-                  <th
-                    className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100"
-                    onClick={() => handleSort('progress')}
-                  >
-                    <div className="flex items-center">
-                      Tiến độ
-                      <SortIcon field="progress" />
-                    </div>
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Ghi chú
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Đánh giá
-                  </th>
                 </tr>
               </thead>
               <tbody className="bg-white divide-y divide-gray-200">
                 {isLoading ? (
                   <tr>
-                    <td colSpan={8} className="px-6 py-4 text-center">
-                      <div className="animate-pulse">Đang tải dữ liệu...</div>
+                    <td colSpan={5} className="px-6 py-12 text-center">
+                      <div className="flex items-center justify-center">
+                        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+                        <span className="ml-2 text-gray-600">Đang tải...</span>
+                      </div>
                     </td>
                   </tr>
                 ) : sortedTasks.length === 0 ? (
                   <tr>
-                    <td colSpan={8} className="px-6 py-4 text-center text-gray-500">
-                      Không tìm thấy công việc nào
+                    <td colSpan={5} className="px-6 py-12 text-center text-gray-500">
+                      Không có dữ liệu công việc
                     </td>
                   </tr>
                 ) : (
-                  sortedTasks.map((task, index) => (
-                    <tr key={task.ID} className={index % 2 === 0 ? 'bg-white' : 'bg-gray-50'}>
+                  sortedTasks.map((task) => (
+                    <tr key={task.ID} className="hover:bg-gray-50">
                       <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
                         {task.ID}
                       </td>
@@ -298,26 +215,12 @@ const Tasks: React.FC = () => {
                         {task["Đơn vị thực hiện"]}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                        <div>
-                          <div>Bắt đầu: {task["Ngày bắt đầu "]}</div>
-                          <div>Kết thúc: {task["Ngày kết thúc"]}</div>
-                        </div>
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        {getStatusBadge(task["Trạng thái "])}
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap">
                         <div className="w-32">
                           {getProgressBar(task["Tiến độ (% hoàn thành)"], task["Trạng thái "])}
                         </div>
                       </td>
-                      <td className="px-6 py-4 text-sm text-gray-900">
-                        <div className="max-w-xs truncate" title={task["Ghi chú - Mô tả"]}>
-                          {task["Ghi chú - Mô tả"]}
-                        </div>
-                      </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                        {task["Đánh giá"]}
+                        {getStatusBadge(task["Trạng thái "])}
                       </td>
                     </tr>
                   ))
@@ -328,16 +231,14 @@ const Tasks: React.FC = () => {
         </div>
 
         {/* Summary */}
-        <div className="mt-6 bg-white shadow rounded-lg p-6">
-          <div className="text-sm text-gray-600">
+        {!isLoading && sortedTasks.length > 0 && (
+          <div className="mt-4 text-sm text-gray-600">
             Hiển thị {sortedTasks.length} công việc
-            {statusFilter !== 'all' && ` (lọc theo: ${statusFilter})`}
-            {searchTerm && ` (tìm kiếm: "${searchTerm}")`}
           </div>
-        </div>
+        )}
       </div>
     </div>
   );
 };
 
-export default Tasks;
+export default TaskList;

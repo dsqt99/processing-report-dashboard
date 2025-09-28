@@ -29,7 +29,6 @@ export interface DashboardStats {
 export interface WebhookConfig {
   sheet_url: string;
   sheet_name: string;
-  refreshInterval: number; // in minutes
 }
 
 // API request interface
@@ -42,7 +41,6 @@ export interface ApiRequest {
 export interface StoredConfig {
   sheet_url: string;
   sheet_name: string;
-  refreshInterval: number;
 }
 
 export interface CachedData {

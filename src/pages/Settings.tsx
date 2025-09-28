@@ -8,6 +8,7 @@ import {
 } from '@heroicons/react/24/outline';
 import { useConfig } from '../store/useStore';
 import { WebhookConfig } from '../types';
+import { saveSheetInformationLog } from '../utils/fileUtils';
 
 const Settings: React.FC = () => {
   const { config, setConfig, loadTasks, loadSampleData } = useConfig();
@@ -23,6 +24,8 @@ const Settings: React.FC = () => {
     }));
   };
 
+
+
   const handleSave = async () => {
     setIsSaving(true);
     setMessage(null);
@@ -35,9 +38,6 @@ const Settings: React.FC = () => {
       if (!formData.sheet_name.trim()) {
         throw new Error('Vui lòng nhập tên sheet');
       }
-      if (formData.refreshInterval < 1) {
-        throw new Error('Thời gian làm mới phải lớn hơn 0');
-      }
 
       // Validate Google Sheets URL format
       if (!formData.sheet_url.includes('docs.google.com/spreadsheets')) {
@@ -47,10 +47,45 @@ const Settings: React.FC = () => {
       // Save configuration
       setConfig(formData);
       
-      setMessage({
-        type: 'success',
-        text: 'Cấu hình đã được lưu thành công!'
+      // Save sheet information to JSON file
+      await saveSheetInformationLog({
+        sheet_url: formData.sheet_url,
+        sheet_name: formData.sheet_name
       });
+
+      // Fetch sheet data from webhook API and save to tiendocongviec.json
+      try {
+        const fetchAndSaveResponse = await fetch('http://localhost:3001/api/fetch-and-save-sheet-data', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            sheet_url: formData.sheet_url,
+            sheet_name: formData.sheet_name
+          })
+        });
+
+        if (fetchAndSaveResponse.ok) {
+          const result = await fetchAndSaveResponse.json();
+          setMessage({
+            type: 'success',
+            text: `Đã lưu cấu hình và thấy ${result.dataCount} bản ghi từ Google Sheets!`
+          });
+        } else {
+          const errorResult = await fetchAndSaveResponse.json();
+          setMessage({
+            type: 'error',
+            text: `Đã lưu cấu hình thành công nhưng không thể thấy dữ liệu sheet: ${errorResult.message}`
+          });
+        }
+      } catch (fetchError) {
+        console.error('Error fetching and saving sheet data:', fetchError);
+        setMessage({
+          type: 'error',
+          text: 'Đã lưu cấu hình thành công nhưng không thể kết nối đến server để tải dữ liệu sheet!'
+        });
+      }
     } catch (error) {
       setMessage({
         type: 'error',
@@ -66,20 +101,37 @@ const Settings: React.FC = () => {
     setMessage(null);
 
     try {
-      // Save current config first
-      setConfig(formData);
-      
-      // Test connection by loading data
-      await loadTasks();
-      
-      setMessage({
-        type: 'success',
-        text: 'Kết nối thành công! Dữ liệu đã được tải.'
+      const response = await fetch('http://113.160.207.71:5678/webhook/check-connection', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          sheet_url: formData.sheet_url,
+          sheet_name: formData.sheet_name
+        })
       });
+
+      if (response.status === 200) {
+        setMessage({
+          type: 'success',
+          text: 'Kết nối thành công! Cấu hình đã được xác thực.'
+        });
+      } else if (response.status === 400) {
+        setMessage({
+          type: 'error',
+          text: 'Lỗi kết nối. Vui lòng kiểm tra lại URL và tên sheet.'
+        });
+      } else {
+        setMessage({
+          type: 'error',
+          text: 'Có lỗi xảy ra khi kiểm tra kết nối.'
+        });
+      }
     } catch (error) {
       setMessage({
         type: 'error',
-        text: 'Không thể kết nối. Vui lòng kiểm tra lại URL và tên sheet.'
+        text: 'Không thể kết nối đến server. Vui lòng thử lại sau.'
       });
     } finally {
       setIsLoading(false);
@@ -94,14 +146,7 @@ const Settings: React.FC = () => {
     });
   };
 
-  const handleReset = () => {
-    setFormData({
-      sheet_url: 'https://docs.google.com/spreadsheets/d/1vy0dgWegn6btmYTPfvpPnWa7o897H39QDnZqnKzhi7E/edit?usp=sharing',
-      sheet_name: 'Trang tính1',
-      refreshInterval: 5
-    });
-    setMessage(null);
-  };
+
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -147,7 +192,7 @@ const Settings: React.FC = () => {
               <div className="px-6 py-4 border-b border-gray-200">
                 <h3 className="text-lg font-medium text-gray-900 flex items-center">
                   <CogIcon className="h-5 w-5 mr-2" />
-                  Cấu hình Webhook API
+                  Cấu hình Google Sheet
                 </h3>
               </div>
               <div className="p-6 space-y-6">
@@ -187,23 +232,6 @@ const Settings: React.FC = () => {
                   </p>
                 </div>
 
-                {/* Refresh Interval */}
-                <div>
-                  <label htmlFor="refresh_interval" className="block text-sm font-medium text-gray-700 mb-2">Thời gian làm mới (phút)</label>
-                  <input
-                    type="number"
-                    id="refresh_interval"
-                    min="1"
-                    max="60"
-                    className="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
-                    value={formData.refreshInterval}
-                    onChange={(e) => handleInputChange('refreshInterval', parseInt(e.target.value) || 5)}
-                  />
-                  <p className="mt-1 text-xs text-gray-500">
-                    Tần suất tự động làm mới dữ liệu (1-60 phút)
-                  </p>
-                </div>
-
                 {/* Action Buttons */}
                 <div className="flex flex-wrap gap-3 pt-4">
                   <button
@@ -221,13 +249,6 @@ const Settings: React.FC = () => {
                   >
                     <CloudArrowUpIcon className="-ml-1 mr-2 h-4 w-4" />
                     {isLoading ? 'Đang kiểm tra...' : 'Kiểm tra kết nối'}
-                  </button>
-                  
-                  <button
-                    onClick={handleReset}
-                    className="inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md shadow-sm text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
-                  >
-                    Đặt lại mặc định
                   </button>
                 </div>
               </div>

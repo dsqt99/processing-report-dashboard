@@ -1,4 +1,4 @@
-import React, { useMemo } from 'react';
+import React, { useMemo, useEffect } from 'react';
 import {
   Chart as ChartJS,
   CategoryScale,
@@ -12,7 +12,7 @@ import {
   PointElement,
 } from 'chart.js';
 import { Bar, Pie, Line } from 'react-chartjs-2';
-import { useTasks } from '../store/useStore';
+import { useTasks, useStore } from '../store/useStore';
 import { STATUS_COLORS, TaskStatus } from '../types';
 import { format, parseISO } from 'date-fns';
 import { vi } from 'date-fns/locale';
@@ -32,6 +32,12 @@ ChartJS.register(
 
 const Charts: React.FC = () => {
   const { tasks, isLoading, error } = useTasks();
+  const { loadTasks } = useStore();
+
+  // Load tasks when component mounts
+  useEffect(() => {
+    loadTasks();
+  }, [loadTasks]);
 
   // Status Distribution Data
   const statusDistributionData = useMemo(() => {
@@ -157,6 +163,21 @@ const Charts: React.FC = () => {
         position: 'top' as const,
       },
     },
+    scales: {
+      y: {
+        beginAtZero: true,
+        max: 100,
+        ticks: {
+          stepSize: 10,
+          callback: function(value: any) {
+            // Only show even tens: 0, 10, 20, 30, ..., 100
+            if (value % 10 === 0) {
+              return value;
+            }
+          }
+        }
+      }
+    }
   };
 
   const pieOptions = {
@@ -167,6 +188,54 @@ const Charts: React.FC = () => {
         position: 'right' as const,
       },
     },
+  };
+
+  // Calculate max tasks for y-axis
+  const maxTasksInMonth = useMemo(() => {
+    const monthlyData: Record<string, number> = {};
+    
+    tasks.forEach(task => {
+      try {
+        const [day, month, year] = task["Ngày kết thúc"].split('/');
+        const date = new Date(parseInt(year), parseInt(month) - 1, parseInt(day));
+        const monthKey = format(date, 'MM/yyyy');
+        
+        if (!monthlyData[monthKey]) {
+          monthlyData[monthKey] = 0;
+        }
+        monthlyData[monthKey]++;
+      } catch (error) {
+        // Skip invalid dates
+      }
+    });
+    
+    const maxTasks = Math.max(...Object.values(monthlyData), 0);
+    return Math.ceil(maxTasks * 1.1); // Add 10% padding
+  }, [tasks]);
+
+  const lineChartOptions = {
+    responsive: true,
+    maintainAspectRatio: false,
+    plugins: {
+      legend: {
+        position: 'top' as const,
+      },
+    },
+    scales: {
+      y: {
+        beginAtZero: true,
+        max: maxTasksInMonth,
+        ticks: {
+          stepSize: 1,
+          callback: function(value: any) {
+            // Only show integer values
+            if (Number.isInteger(value)) {
+              return value;
+            }
+          }
+        }
+      }
+    }
   };
 
   if (isLoading) {
@@ -228,11 +297,9 @@ const Charts: React.FC = () => {
 
           {/* Timeline Progress Line Chart */}
           <div className="bg-white p-6 rounded-lg shadow lg:col-span-2">
-            <h3 className="text-lg font-medium text-gray-900 mb-4">
-              Xu hướng tiến độ theo thời gian
-            </h3>
+            <h3 className="text-lg font-medium text-gray-900 mb-4">Xu hướng tiến độ theo thời gian</h3>
             <div className="h-80">
-              <Line data={timelineData} options={chartOptions} />
+              <Line data={timelineData} options={lineChartOptions} />
             </div>
           </div>
         </div>

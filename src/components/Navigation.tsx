@@ -4,7 +4,7 @@ import {
   ChartBarIcon, 
   TableCellsIcon, 
   ChartPieIcon, 
-  CogIcon 
+  CogIcon
 } from '@heroicons/react/24/outline';
 
 interface NavItem {
@@ -20,7 +20,7 @@ const navItems: NavItem[] = [
     icon: ChartBarIcon,
   },
   {
-    name: 'Danh sách công việc',
+    name: 'Công việc',
     path: '/tasks',
     icon: TableCellsIcon,
   },
@@ -44,9 +44,16 @@ const Navigation: React.FC = () => {
       {/* Header */}
       <div className="max-w-7xl mx-auto px-6">
         <div className="py-8">
-          <h1 className="text-3xl font-bold text-gray-900 mb-2">
-            Ứng dụng Quản lý Tiến độ Công việc
-          </h1>
+          <div className="flex items-center mb-2">
+            <img 
+              src="/src/assets/Logo-Bo-Cong-An.webp" 
+              alt="Logo Bộ Công An" 
+              className="h-16 w-16 mr-4"
+            />
+            <h1 className="text-3xl font-bold text-gray-900">
+              Ứng dụng Quản lý Tiến độ Công việc
+            </h1>
+          </div>
           <p className="text-gray-600">
             Theo dõi và quản lý tiến độ công việc một cách trực quan và hiệu quả
           </p>

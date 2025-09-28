@@ -19,45 +19,57 @@ graph TD
 ```
 
 ## 2. Mô tả Công nghệ
-- Frontend: React@18 + TypeScript@5 + Vite@5
-- UI Framework: Tailwind CSS@3 + Headless UI
-- Charts: Chart.js@4 + React-Chartjs-2
-- HTTP Client: Axios@1
-- State Management: Zustand@4
-- Date Handling: date-fns@2
-- Icons: Heroicons@2
-- API: Webhook API (không cần Google Sheets API key)
+
+* Frontend: React\@18 + TypeScript\@5 + Vite\@5
+
+* UI Framework: Tailwind CSS\@3 + Headless UI
+
+* Charts: Chart.js\@4 + React-Chartjs-2
+
+* HTTP Client: Axios\@1
+
+* State Management: Zustand\@4
+
+* Date Handling: date-fns\@2
+
+* Icons: Heroicons\@2
+
+* API: Webhook API (không cần Google Sheets API key)
 
 ## 3. Định nghĩa Route
 
-| Route | Mục đích |
-|-------|----------|
-| / | Trang Dashboard chính, hiển thị thống kê tổng quan và biểu đồ tiến độ |
-| /tasks | Trang danh sách công việc với bảng dữ liệu chi tiết và bộ lọc |
-| /charts | Trang biểu đồ phân tích với các loại chart khác nhau |
-| /settings | Trang Cấu hình Google Sheets API và thiết lập hệ thống |
+| Route     | Mục đích                                                              |
+| --------- | --------------------------------------------------------------------- |
+| /         | Trang Dashboard chính, hiển thị thống kê tổng quan và biểu đồ tiến độ |
+| /tasks    | Trang danh sách công việc với bảng dữ liệu chi tiết và bộ lọc         |
+| /charts   | Trang biểu đồ phân tích với các loại chart khác nhau                  |
+| /settings | Trang Cấu hình Google Sheets API và thiết lập hệ thống                |
 
 ## 4. Định nghĩa API
 
 ### 4.1 Core API
 
 Webhook API Integration
+
 ```
 POST https://67c21da0bd4e.ngrok-free.app/webhook/get-sheet
 ```
 
 Request Headers:
-| Param Name | Param Type | isRequired | Description |
-|------------|------------|------------|-------------|
-| Content-Type | string | true | application/json |
+
+| Param Name   | Param Type | isRequired | Description      |
+| ------------ | ---------- | ---------- | ---------------- |
+| Content-Type | string     | true       | application/json |
 
 Request Body:
-| Param Name | Param Type | isRequired | Description |
-|------------|------------|------------|-------------|
-| sheet_url | string | true | URL của Google Sheets |
-| sheet_name | string | true | Tên sheet cần lấy dữ liệu |
+
+| Param Name  | Param Type | isRequired | Description               |
+| ----------- | ---------- | ---------- | ------------------------- |
+| sheet\_url  | string     | true       | URL của Google Sheets     |
+| sheet\_name | string     | true       | Tên sheet cần lấy dữ liệu |
 
 Example Request:
+
 ```json
 {
   "sheet_url": "https://docs.google.com/spreadsheets/d/1vy0dgWegn6btmYTPfvpPnWa7o897H39QDnZqnKzhi7E/edit?usp=sharing",
@@ -66,11 +78,13 @@ Example Request:
 ```
 
 Response:
-| Param Name | Param Type | Description |
-|------------|------------|-------------|
-| data | array | Mảng objects chứa dữ liệu từ Google Sheets |
+
+| Param Name | Param Type | Description                                |
+| ---------- | ---------- | ------------------------------------------ |
+| data       | array      | Mảng objects chứa dữ liệu từ Google Sheets |
 
 Example Response:
+
 ```json
 [
   {
@@ -274,3 +288,5 @@ const sampleTaskData: Task[] = [
     "Ghi chú - Mô tả": "Hoàn thành tiến độ",
     "Đánh giá": "Tốt"
   }
+```
+

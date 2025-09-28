@@ -1,8 +1,10 @@
 import axios, { AxiosResponse } from 'axios';
 import { Task, ApiRequest, DashboardStats, TaskStatus } from '../types';
 
-// API endpoint
-const WEBHOOK_API_URL = 'https://67c21da0bd4e.ngrok-free.app/webhook/get-sheet';
+// Local API endpoints
+const LOCAL_API_URL = 'http://localhost:3001/api/tasks';
+const REFRESH_API_URL = 'http://localhost:3001/api/refresh-data';
+const SHEET_CONFIG_URL = 'http://localhost:3001/api/sheet-config';
 
 // Create axios instance with default config
 const apiClient = axios.create({
@@ -14,7 +16,21 @@ const apiClient = axios.create({
 
 // API response interface
 interface ApiResponse {
+  success: boolean;
   data: Task[];
+  count: number;
+  message?: string;
+  save_time?: string;
+}
+
+// Sheet config response interface
+interface SheetConfigResponse {
+  success: boolean;
+  config: {
+    sheet_url: string;
+    sheet_name: string;
+  } | null;
+  message?: string;
 }
 
 // Error handling class
@@ -29,25 +45,30 @@ export class ApiError extends Error {
   }
 }
 
-// Fetch tasks from Google Sheets via webhook
-export const fetchTasks = async (request: ApiRequest): Promise<Task[]> => {
+// Fetch tasks from local tiendocongviec.json file
+export const fetchTasks = async (request?: ApiRequest): Promise<Task[]> => {
   try {
-    const response: AxiosResponse<Task[]> = await apiClient.post(WEBHOOK_API_URL, request);
+    const response: AxiosResponse<ApiResponse> = await apiClient.get(LOCAL_API_URL);
 
-    if (!response.data || !Array.isArray(response.data)) {
+    if (!response.data.success) {
+      throw new ApiError(response.data.message || 'Failed to fetch tasks');
+    }
+
+    if (!Array.isArray(response.data.data)) {
       throw new ApiError('Invalid response format from API');
     }
 
-    return response.data;
+    // Return the data directly as it matches the Task interface
+    return response.data.data;
   } catch (error) {
     if (axios.isAxiosError(error)) {
       const status = error.response?.status;
       const message = error.response?.data?.message || error.message;
       
       if (status === 404) {
-        throw new ApiError('Sheet not found or invalid URL', status);
+        throw new ApiError('Tasks data not found', status);
       } else if (status === 403) {
-        throw new ApiError('Access denied to the sheet', status);
+        throw new ApiError('Access denied to tasks data', status);
       } else if (status === 500) {
         throw new ApiError('Server error occurred', status);
       } else {
@@ -59,7 +80,84 @@ export const fetchTasks = async (request: ApiRequest): Promise<Task[]> => {
   }
 };
 
-// Calculate dashboard statistics from tasks
+// Fetch tasks with save_time information
+export const fetchTasksWithSaveTime = async (): Promise<{ tasks: Task[]; saveTime?: string }> => {
+  try {
+    const response: AxiosResponse<ApiResponse> = await apiClient.get(LOCAL_API_URL);
+
+    if (!response.data.success) {
+      throw new ApiError(response.data.message || 'Failed to fetch tasks');
+    }
+
+    if (!Array.isArray(response.data.data)) {
+      throw new ApiError('Invalid response format from API');
+    }
+
+    return {
+      tasks: response.data.data,
+      saveTime: response.data.save_time
+    };
+  } catch (error) {
+    if (axios.isAxiosError(error)) {
+      const status = error.response?.status;
+      const message = error.response?.data?.message || error.message;
+      
+      if (status === 404) {
+        throw new ApiError('Tasks data not found', status);
+      } else if (status === 403) {
+        throw new ApiError('Access denied to tasks data', status);
+      } else if (status === 500) {
+        throw new ApiError('Server error occurred', status);
+      } else {
+        throw new ApiError(`API request failed: ${message}`, status);
+      }
+    }
+    
+    throw new ApiError('Network error or unexpected error occurred');
+  }
+};
+
+// Refresh data from webhook and save to tiendocongviec.json
+export const refreshData = async (): Promise<{ success: boolean; message: string; timestamp?: string }> => {
+  try {
+    const response: AxiosResponse<{ success: boolean; message: string; data: Task[]; timestamp: string }> = 
+      await apiClient.post(REFRESH_API_URL);
+
+    if (!response.data.success) {
+      throw new ApiError(response.data.message || 'Failed to refresh data');
+    }
+
+    return {
+      success: true,
+      message: response.data.message,
+      timestamp: response.data.timestamp
+    };
+  } catch (error) {
+    if (axios.isAxiosError(error)) {
+      const message = error.response?.data?.message || error.message || 'Network error occurred';
+      throw new ApiError(message, error.response?.status, error.response?.data);
+    }
+    throw new ApiError('An unexpected error occurred while refreshing data');
+  }
+};
+
+// Fetch sheet configuration from sheet_information.json
+export const fetchSheetConfig = async (): Promise<{ sheet_url: string; sheet_name: string } | null> => {
+  try {
+    const response: AxiosResponse<SheetConfigResponse> = await apiClient.get(SHEET_CONFIG_URL);
+
+    if (!response.data.success || !response.data.config) {
+      console.warn('No sheet configuration found, using default values');
+      return null;
+    }
+
+    return response.data.config;
+  } catch (error) {
+    console.error('Error fetching sheet configuration:', error);
+    return null;
+  }
+};
+
 export const calculateStats = (tasks: Task[]): DashboardStats => {
   const total = tasks.length;
   

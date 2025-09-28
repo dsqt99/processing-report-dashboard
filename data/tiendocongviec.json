@@ -1,0 +1,53 @@
+{
+  "save_time": "15:29:00 28/09/2025",
+  "data": [
+    {
+      "row_number": 2,
+      "ID": 1,
+      "Tên Công việc": "làm sạch dữ liệu can phạm",
+      "Đơn vị thực hiện": "PV06",
+      "Ngày bắt đầu ": "15/9/2025",
+      "Ngày kết thúc": "31/10/2025",
+      "Trạng thái ": "Đang thực hiện",
+      "Tiến độ (% hoàn thành)": 20,
+      "Ghi chú - Mô tả": "đẩy nhanh tiến độ",
+      "Đánh giá": "chưa tốt"
+    },
+    {
+      "row_number": 3,
+      "ID": 2,
+      "Tên Công việc": "làm sạch dữ liệu người nước ngoài",
+      "Đơn vị thực hiện": "PA08",
+      "Ngày bắt đầu ": "16/9/2025",
+      "Ngày kết thúc": "30/9/2025",
+      "Trạng thái ": "Chưa bắt đầu",
+      "Tiến độ (% hoàn thành)": 90,
+      "Ghi chú - Mô tả": "Cần thêm phản hồi",
+      "Đánh giá": "Tốt"
+    },
+    {
+      "row_number": 4,
+      "ID": 3,
+      "Tên Công việc": "triển khai đường truyền cho công an các xã",
+      "Đơn vị thực hiện": "PV01",
+      "Ngày bắt đầu ": "15/7/2025",
+      "Ngày kết thúc": "30/7/2025",
+      "Trạng thái ": "Đã xong",
+      "Tiến độ (% hoàn thành)": 100,
+      "Ghi chú - Mô tả": "Hoàn thành tiến độ",
+      "Đánh giá": "Tốt"
+    },
+    {
+      "row_number": 5,
+      "ID": 4,
+      "Tên Công việc": "Triển khai hệ thống truyền hình hội nghị đến CAX",
+      "Đơn vị thực hiện": "PV01",
+      "Ngày bắt đầu ": "24/9/2025",
+      "Ngày kết thúc": "30/9/2025",
+      "Trạng thái ": "Tạm dừng",
+      "Tiến độ (% hoàn thành)": 60,
+      "Ghi chú - Mô tả": "Tiếp tục thực hiện",
+      "Đánh giá": "Tốt"
+    }
+  ]
+}
