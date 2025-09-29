@@ -7,7 +7,12 @@ import { traeBadgePlugin } from 'vite-plugin-trae-solo-badge';
 export default defineConfig({
   server: {
     host: '0.0.0.0',
-    port: 5173
+    port: 5173,
+    allowedHosts: [
+      'qlcv.cahy.io.vn',
+      'localhost',
+      '127.0.0.1'
+    ]
   },
   build: {
     sourcemap: 'hidden',
