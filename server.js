@@ -112,7 +112,10 @@ app.post('/api/fetch-and-save-sheet-data', async (req, res) => {
   try {
     const { sheet_url, sheet_name } = req.body;
     
-    // Call the webhook API to get sheet data
+    // Call the webhook API to get sheet data with timeout
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 30000); // 30 second timeout
+    
     const webhookResponse = await fetch('https://n8n-hungyen.cahy.io.vn/webhook/check-connection', {
       method: 'POST',
       headers: {
@@ -122,10 +125,18 @@ app.post('/api/fetch-and-save-sheet-data', async (req, res) => {
         sheet_url: sheet_url,
         sheet_name: sheet_name
       }),
+      signal: controller.signal
     });
+    
+    clearTimeout(timeoutId);
 
+    console.log('Webhook response status:', webhookResponse.status);
+    console.log('Webhook response headers:', Object.fromEntries(webhookResponse.headers.entries()));
+    
     if (!webhookResponse.ok) {
-      throw new Error(`Webhook API returned ${webhookResponse.status}: ${webhookResponse.statusText}`);
+      const errorText = await webhookResponse.text();
+      console.log('Webhook error response body:', errorText);
+      throw new Error(`Webhook API returned ${webhookResponse.status}: ${webhookResponse.statusText}. Body: ${errorText}`);
     }
 
     const sheetData = await webhookResponse.json();
@@ -157,11 +168,29 @@ app.post('/api/fetch-and-save-sheet-data', async (req, res) => {
     });
     
   } catch (error) {
-    console.error('Error fetching and saving sheet data:', error);
+    console.log('Error fetching and saving sheet data:', error);
+    console.log('Error details:', {
+      name: error.name,
+      message: error.message,
+      cause: error.cause,
+      stack: error.stack
+    });
+    
+    let errorMessage = error.message;
+    if (error.name === 'AbortError') {
+      errorMessage = 'Request timeout - webhook took too long to respond';
+    } else if (error.cause?.code === 'UND_ERR_CONNECT_TIMEOUT') {
+      errorMessage = 'Connection timeout - unable to connect to webhook server';
+    }
+    
     res.status(500).json({ 
       success: false, 
       message: 'Error fetching and saving sheet data',
-      error: error.message 
+      error: errorMessage,
+      details: {
+        errorType: error.name,
+        originalError: error.message
+      }
     });
   }
 });
