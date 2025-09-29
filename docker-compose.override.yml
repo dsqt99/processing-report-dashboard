@@ -1,7 +1,5 @@
 # Default development configuration
 services:
   app-dev:
-    profiles:
-      - ""  # Default profile (no profile needed)
     environment:
-      - VITE_API_URL=http://api.cahy.io.vn
+      - VITE_API_URL=http://113.160.207.71:3000

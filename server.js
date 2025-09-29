@@ -322,8 +322,9 @@ app.get('/api/health', (req, res) => {
   res.json({ status: 'OK', message: 'Server is running' });
 });
 
-app.listen(PORT, () => {
-  console.log(`File server running on http://localhost:${PORT}`);
+app.listen(PORT, '0.0.0.0', () => {
+  console.log(`File server running on http://0.0.0.0:${PORT}`);
+  console.log(`Access from external: http://113.160.207.71:${PORT}`);
 });
 
 export default app;

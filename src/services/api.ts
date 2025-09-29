@@ -1,10 +1,11 @@
 import axios, { AxiosResponse } from 'axios';
 import { Task, ApiRequest, DashboardStats, TaskStatus } from '../types';
 
-// Local API endpoints
-const LOCAL_API_URL = 'http://localhost:3000/api/tasks';
-const REFRESH_API_URL = 'http://localhost:3000/api/refresh-data';
-const SHEET_CONFIG_URL = 'http://localhost:3000/api/sheet-config';
+// API endpoints - use environment variable or fallback to localhost
+const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
+const LOCAL_API_URL = `${API_BASE_URL}/api/tasks`;
+const REFRESH_API_URL = `${API_BASE_URL}/api/refresh-data`;
+const SHEET_CONFIG_URL = `${API_BASE_URL}/api/sheet-config`;
 
 // Create axios instance with default config
 const apiClient = axios.create({
