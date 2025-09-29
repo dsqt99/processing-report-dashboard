@@ -25,7 +25,7 @@ services:
       dockerfile: Dockerfile
       target: production
     ports:
-      - "8080:80"  # Changed to avoid conflict with nginx-proxy-manager
+      - "8080:80"  # Avoid conflict with nginx-proxy-manager port 80
     environment:
       - NODE_ENV=production
     profiles:
@@ -50,6 +50,22 @@ services:
     networks:
       - app-network
       - proxy-net
+
+  # Nginx Proxy Manager for domain management
+  nginx-proxy-manager:
+    image: 'jc21/nginx-proxy-manager:latest'
+    restart: unless-stopped
+    ports:
+      - '80:80'
+      - '81:81'
+      - '443:443'
+    volumes:
+      - ./nginx-data:/data
+      - ./nginx-letsencrypt:/etc/letsencrypt
+    networks:
+      - proxy-net
+    profiles:
+      - proxy
 
 networks:
   app-network:
