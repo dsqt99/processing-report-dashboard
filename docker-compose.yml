@@ -12,29 +12,14 @@ services:
       - /app/node_modules
     environment:
       - NODE_ENV=development
-    profiles:
-      - dev
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.app-dev.rule=Host(`qlcv.cahy.io.vn`)"
+      - "traefik.http.services.app-dev.loadbalancer.server.port=5173"
     networks:
       - app-network
       - proxy-net
 
-  # Production environment
-  app-prod:
-    build:
-      context: .
-      dockerfile: Dockerfile
-      target: production
-    ports:
-      - "8080:80"  # Avoid conflict with nginx-proxy-manager port 80
-    environment:
-      - NODE_ENV=production
-    profiles:
-      - prod
-    networks:
-      - app-network
-      - proxy-net
-
-  # Backend API server (if needed)
   api:
     build:
       context: .
@@ -45,27 +30,13 @@ services:
       - ./data:/app/data
     environment:
       - NODE_ENV=production
-    profiles:
-      - api
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.api.rule=Host(`api.cahy.io.vn`)"
+      - "traefik.http.services.api.loadbalancer.server.port=3000"
     networks:
       - app-network
       - proxy-net
-
-  # Nginx Proxy Manager for domain management
-  nginx-proxy-manager:
-    image: 'jc21/nginx-proxy-manager:latest'
-    restart: unless-stopped
-    ports:
-      - '80:80'
-      - '81:81'
-      - '443:443'
-    volumes:
-      - ./nginx-data:/data
-      - ./nginx-letsencrypt:/etc/letsencrypt
-    networks:
-      - proxy-net
-    profiles:
-      - proxy
 
 networks:
   app-network:
