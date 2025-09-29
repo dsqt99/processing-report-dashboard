@@ -38,7 +38,7 @@ docker-compose --profile api up --build -d
 # Hoặc sử dụng Makefile
 make api
 ```
-- API server chạy tại: http://localhost:3000
+- API server chạy tại: https://api.cahy.io.vn
 
 ## 🛠️ Các lệnh hữu ích
 
@@ -94,7 +94,7 @@ make clean
 Bạn có thể tạo file `.env` để cấu hình:
 ```env
 NODE_ENV=development
-VITE_API_URL=http://localhost:3000
+VITE_API_URL=https://https://api.cahy.io.vn
 ```
 
 ### Ports

@@ -11,7 +11,8 @@ export default defineConfig({
     allowedHosts: [
       'qlcv.cahy.io.vn',
       'localhost',
-      '127.0.0.1'
+      '127.0.0.1',
+      '192.168.11.224'
     ]
   },
   build: {

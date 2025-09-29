@@ -88,7 +88,7 @@ export const useStore = create<AppState>()(
       isLoading: false,
       error: null,
       config: {
-        sheet_url: 'https://docs.google.com/spreadsheets/d/1vy0dgWegn6btmYTPfvpPnWa7o897H39QDnZqnKzhi7E/edit?usp=sharing',
+        sheet_url: 'https://docs.google.com/spreadsheets/d/1sb6lnE9yMY6Nj9H2L2clHGhX05bHXvB_1SQXuWBPsrU/edit?usp=sharing',
         sheet_name: 'Trang tính1',
       },
       statusFilter: 'all',
@@ -129,14 +129,16 @@ export const useStore = create<AppState>()(
             error: null 
           });
           
-          // Cache data to localStorage
+          // Cache data to localStorage with Vietnam timezone
+          const now = new Date();
+          const vietnamTime = new Date(now.getTime() + (7 * 60 * 60 * 1000));
           localStorage.setItem(STORAGE_KEYS.CACHED_TASKS, JSON.stringify({
             tasks,
             stats,
             saveTime,
-            timestamp: Date.now()
+            timestamp: vietnamTime.getTime()
           }));
-          localStorage.setItem(STORAGE_KEYS.LAST_SYNC, new Date().toISOString());
+          localStorage.setItem(STORAGE_KEYS.LAST_SYNC, vietnamTime.toISOString());
           
         } catch (error) {
           const errorMessage = error instanceof ApiError 

@@ -9,8 +9,11 @@ export interface SheetLogEntry {
 
 export const saveSheetInformationLog = async (sheetInfo: { sheet_url: string; sheet_name: string }): Promise<void> => {
   try {
+    // Create timestamp with Vietnam timezone (+7)
+    const now = new Date();
+    const vietnamTime = new Date(now.getTime() + (7 * 60 * 60 * 1000)); // Add 7 hours
     const logEntry: SheetLogEntry = {
-      timestamp: new Date().toISOString(),
+      timestamp: vietnamTime.toISOString(),
       sheet_url: sheetInfo.sheet_url,
       sheet_name: sheetInfo.sheet_name,
       action: 'configuration_saved'

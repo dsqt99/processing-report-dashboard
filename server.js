@@ -9,16 +9,18 @@ const __dirname = path.dirname(__filename);
 
 const app = express();
 const PORT = process.env.PORT || 3000;
+const WEBHOOK_URL = process.env.WEBHOOK_URL || 'http://processing-report-dashboard-n8n-1:5678/webhook/check-connection';
 
-// Helper function to format time as HH:mm:ss DD/MM/YYYY
+// Helper function to format time as HH:mm:ss DD/MM/YYYY with Vietnam timezone (+7)
 const formatDateTime = () => {
   const now = new Date();
-  const hours = now.getHours().toString().padStart(2, '0');
-  const minutes = now.getMinutes().toString().padStart(2, '0');
-  const seconds = now.getSeconds().toString().padStart(2, '0');
-  const day = now.getDate().toString().padStart(2, '0');
-  const month = (now.getMonth() + 1).toString().padStart(2, '0');
-  const year = now.getFullYear();
+  const vietnamTime = new Date(now.getTime() + (7 * 60 * 60 * 1000)); // Add 7 hours for Vietnam timezone
+  const hours = vietnamTime.getHours().toString().padStart(2, '0');
+  const minutes = vietnamTime.getMinutes().toString().padStart(2, '0');
+  const seconds = vietnamTime.getSeconds().toString().padStart(2, '0');
+  const day = vietnamTime.getDate().toString().padStart(2, '0');
+  const month = (vietnamTime.getMonth() + 1).toString().padStart(2, '0');
+  const year = vietnamTime.getFullYear();
   
   return `${hours}:${minutes}:${seconds} ${day}/${month}/${year}`;
 };
@@ -116,7 +118,7 @@ app.post('/api/fetch-and-save-sheet-data', async (req, res) => {
     const controller = new AbortController();
     const timeoutId = setTimeout(() => controller.abort(), 30000); // 30 second timeout
     
-    const webhookResponse = await fetch('https://n8n-hungyen.cahy.io.vn/webhook/check-connection', {
+    const webhookResponse = await fetch(WEBHOOK_URL, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -232,10 +234,33 @@ app.post('/api/save-sheet-data', (req, res) => {
 // API endpoint to refresh data from webhook
 app.post('/api/refresh-data', async (req, res) => {
   try {
-    const webhookUrl = 'https://n8n-hungyen.cahy.io.vn/webhook/check-connection';
+    const webhookUrl = WEBHOOK_URL;
+    
+    // Get sheet configuration from saved data
+    const configDir = path.join(__dirname, 'data');
+    const configPath = path.join(configDir, 'sheet_information.json');
+    
+    if (!fs.existsSync(configPath)) {
+      return res.status(400).json({ 
+        success: false, 
+        message: 'No sheet configuration found. Please configure sheet settings first.' 
+      });
+    }
+    
+    const configData = fs.readFileSync(configPath, 'utf8');
+    const sheetInfo = JSON.parse(configData);
+    const latestConfig = sheetInfo[sheetInfo.length - 1];
+    
+    if (!latestConfig || !latestConfig.sheet_url || !latestConfig.sheet_name) {
+      return res.status(400).json({ 
+        success: false, 
+        message: 'Invalid sheet configuration. Please reconfigure sheet settings.' 
+      });
+    }
+    
     const requestData = {
-      sheet_url: "https://docs.google.com/spreadsheets/d/1sb6lnE9yMY6Nj9H2L2clHGhX05bHXvB_1SQXuWBPsrU/edit?usp=sharing",
-      sheet_name: "Trang tính1"
+      sheet_url: latestConfig.sheet_url,
+      sheet_name: latestConfig.sheet_name
     };
 
     console.log('Fetching data from webhook:', webhookUrl);
@@ -256,12 +281,11 @@ app.post('/api/refresh-data', async (req, res) => {
     console.log('Received data from webhook:', data);
 
     // Save to tiendocongviec.json with new structure
-    const dataDir = path.join(__dirname, 'data');
-    const filePath = path.join(dataDir, 'tiendocongviec.json');
+    const filePath = path.join(configDir, 'tiendocongviec.json');
     
     // Ensure data directory exists
-    if (!fs.existsSync(dataDir)) {
-      fs.mkdirSync(dataDir, { recursive: true });
+    if (!fs.existsSync(configDir)) {
+      fs.mkdirSync(configDir, { recursive: true });
     }
 
     // Create new JSON structure with save_time and data
@@ -275,11 +299,15 @@ app.post('/api/refresh-data', async (req, res) => {
     
     console.log('Data refreshed and saved to:', filePath);
     
+    // Create timestamp with Vietnam timezone (+7)
+    const now = new Date();
+    const vietnamTime = new Date(now.getTime() + (7 * 60 * 60 * 1000));
+    
     res.json({ 
       success: true, 
       message: 'Data refreshed successfully',
       data: data,
-      timestamp: new Date().toISOString()
+      timestamp: vietnamTime.toISOString()
     });
 
   } catch (error) {

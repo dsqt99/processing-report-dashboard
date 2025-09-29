@@ -12,9 +12,11 @@ function saveSheetInformation(sheetInfo) {
       fs.mkdirSync(dataDir, { recursive: true });
     }
     
-    // Create log entry
+    // Create log entry with Vietnam timezone (+7)
+    const now = new Date();
+    const vietnamTime = new Date(now.getTime() + (7 * 60 * 60 * 1000)); // Add 7 hours
     const logEntry = {
-      timestamp: new Date().toISOString(),
+      timestamp: vietnamTime.toISOString(),
       sheet_url: sheetInfo.sheet_url,
       sheet_name: sheetInfo.sheet_name,
       action: 'configuration_saved'

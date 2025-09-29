@@ -1,5 +1,5 @@
 services:
-  # Traefik reverse proxy
+  # Traefik reverse proxy - SINGLE INSTANCE
   traefik:
     image: traefik:v3.0
     command:
@@ -7,6 +7,7 @@ services:
       - "--api.insecure=true"
       - "--providers.docker=true"
       - "--providers.docker.exposedbydefault=false"
+      - "--providers.docker.network=processing-report-dashboard_proxy-net"
       - "--entrypoints.web.address=:80"
       - "--entrypoints.websecure.address=:443"
       - "--certificatesresolvers.myresolver.acme.tlschallenge=true"
@@ -26,6 +27,7 @@ services:
       - "traefik.enable=true"
       - "traefik.http.routers.dashboard.rule=Host(`traefik.cahy.io.vn`)"
       - "traefik.http.routers.dashboard.service=api@internal"
+    restart: unless-stopped
 
   # Development environment
   app-dev:
@@ -40,6 +42,7 @@ services:
       - /app/node_modules
     environment:
       - NODE_ENV=development
+      - VITE_API_URL=https://api.cahy.io.vn
     labels:
       - "traefik.enable=true"
       - "traefik.http.routers.app-dev.rule=Host(`qlcv.cahy.io.vn`)"
@@ -54,8 +57,10 @@ services:
     networks:
       - app-network
       - proxy-net
+    restart: unless-stopped
 
-  api:
+  # API service
+  apiservice:
     build:
       context: .
       dockerfile: Dockerfile.api
@@ -66,26 +71,62 @@ services:
       - ./server.js:/app/server.js
     environment:
       - NODE_ENV=production
+      - WEBHOOK_URL=http://processing-report-dashboard-n8n-1:5678/webhook/check-connection
     labels:
       - "traefik.enable=true"
-      - "traefik.http.routers.api.rule=Host(`api.cahy.io.vn`)"
-      - "traefik.http.routers.api.entrypoints=websecure"
-      - "traefik.http.routers.api.tls.certresolver=myresolver"
-      - "traefik.http.services.api.loadbalancer.server.port=3000"
+      - "traefik.http.routers.apiservice.rule=Host(`api.cahy.io.vn`)"
+      - "traefik.http.routers.apiservice.entrypoints=websecure"
+      - "traefik.http.routers.apiservice.tls.certresolver=myresolver"
+      - "traefik.http.services.apiservice.loadbalancer.server.port=3000"
       # HTTP to HTTPS redirect
-      - "traefik.http.routers.api-http.rule=Host(`api.cahy.io.vn`)"
-      - "traefik.http.routers.api-http.entrypoints=web"
-      - "traefik.http.routers.api-http.middlewares=api-https-redirect"
-      - "traefik.http.middlewares.api-https-redirect.redirectscheme.scheme=https"
+      - "traefik.http.routers.apiservice-http.rule=Host(`api.cahy.io.vn`)"
+      - "traefik.http.routers.apiservice-http.entrypoints=web"
+      - "traefik.http.routers.apiservice-http.middlewares=apiservice-https-redirect"
+      - "traefik.http.middlewares.apiservice-https-redirect.redirectscheme.scheme=https"
     networks:
       - app-network
       - proxy-net
+    restart: unless-stopped
+
+  # n8n workflow automation
+  n8n:
+    image: n8nio/n8n:latest
+    environment:
+      - N8N_HOST=n8n-hungyen.cahy.io.vn
+      - N8N_PORT=5678
+      - N8N_PROTOCOL=https
+      - N8N_EDITOR_BASE_URL=https://n8n-hungyen.cahy.io.vn
+      - WEBHOOK_URL=https://n8n-hungyen.cahy.io.vn
+      - GENERIC_TIMEZONE=Asia/Ho_Chi_Minh
+      - N8N_ENFORCE_SETTINGS_FILE_PERMISSIONS=true
+      - N8N_SECURE_COOKIE=true
+      - EXPRESS_TRUST_PROXY=true
+      - N8N_RUNNERS_ENABLED=true
+      - N8N_DEFAULT_BINARY_DATA_MODE=default
+      - N8N_PAYLOAD_SIZE_MAX=1000
+    volumes:
+      - ../n8n-docker/data:/home/node/.n8n
+    restart: unless-stopped
+    networks:
+      - app-network
+      - proxy-net
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.n8n.rule=Host(`n8n-hungyen.cahy.io.vn`)"
+      - "traefik.http.routers.n8n.entrypoints=websecure"
+      - "traefik.http.routers.n8n.tls.certresolver=myresolver"
+      - "traefik.http.services.n8n.loadbalancer.server.port=5678"
+      # HTTP to HTTPS redirect
+      - "traefik.http.routers.n8n-http.rule=Host(`n8n-hungyen.cahy.io.vn`)"
+      - "traefik.http.routers.n8n-http.entrypoints=web"
+      - "traefik.http.routers.n8n-http.middlewares=n8n-https-redirect"
+      - "traefik.http.middlewares.n8n-https-redirect.redirectscheme.scheme=https"
 
 networks:
   app-network:
     driver: bridge
   proxy-net:
-    external: true  # Connect to external proxy-net network from n8n folder
+    driver: bridge
 
 volumes:
   node_modules:
