@@ -22,7 +22,7 @@ export const saveSheetInformationLog = async (sheetInfo: { sheet_url: string; sh
     // Try to save to actual file in data directory (only latest entry)
     try {
       // Call a backend endpoint to save the file
-      const response = await fetch('http://localhost:3001/api/save-sheet-info', {
+      const response = await fetch('http://localhost:3000/api/save-sheet-info', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

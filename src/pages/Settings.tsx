@@ -55,7 +55,7 @@ const Settings: React.FC = () => {
 
       // Fetch sheet data from webhook API and save to tiendocongviec.json
       try {
-        const fetchAndSaveResponse = await fetch('http://localhost:3001/api/fetch-and-save-sheet-data', {
+        const fetchAndSaveResponse = await fetch('http://localhost:3000/api/fetch-and-save-sheet-data', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
