@@ -1,24 +1,119 @@
 <!doctype html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Ứng dụng Quản lý Tiến độ Công việc</title>
-    <script type="module">
-      if (import.meta.hot?.on) {
-        import.meta.hot.on('vite:error', (error) => {
-          if (error.err) {
-            console.error(
-              [error.err.message, error.err.frame].filter(Boolean).join('\n'),
-            )
+
+<head>
+  <meta charset="UTF-8" />
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Ứng dụng Quản lý Tiến độ Công việc</title>
+  <link href="https://cdn.jsdelivr.net/npm/@n8n/chat/dist/style.css" rel="stylesheet" />
+  <link href="/chat-custom.css" rel="stylesheet" />
+  <script type="module">
+    if (import.meta.hot?.on) {
+      import.meta.hot.on('vite:error', (error) => {
+        if (error.err) {
+          console.error(
+            [error.err.message, error.err.frame].filter(Boolean).join('\n'),
+          )
+        }
+      })
+    }
+  </script>
+</head>
+
+<body>
+  <div id="root"></div>
+
+  <!-- Chat mount point (use internal widget header) -->
+  <div id="n8n-chat"></div>
+
+  <script type="module" src="/src/main.tsx"></script>
+  <script type="module" defer>
+    import Chatbot from "https://cdn.n8nchatui.com/v1/pole-embed-yard.js";
+    Chatbot.init({
+      "n8nChatUrl": "https://n8n-hungyen.cahy.io.vn/webhook/54fd84d7-d299-4ce8-b3a3-d30774592ac7/chat",
+      "metadata": {}, // Include any custom data to send with each message to your n8n workflow
+      "theme": {
+        "button": {
+          "backgroundColor": "#fff8e1",
+          "right": 20,
+          "bottom": 20,
+          "size": 60,
+          "iconColor": "#373434",
+          "customIconSrc": "https://sf-static.upanhlaylink.com/img/image_20251025a552af9336daae3e46eab775b3600bf2.jpg",
+          "customIconSize": 100,
+          "customIconBorderRadius": 40,
+          "autoWindowOpen": {
+            "autoOpen": false,
+            "openDelay": 2
+          },
+          "borderRadius": "circle"
+        },
+        "tooltip": {
+          "showTooltip": true,
+          "tooltipMessage": "Hỏi đáp tức thời với trợ lý công an Hưng Yên",
+          "tooltipBackgroundColor": "#fff9f6",
+          "tooltipTextColor": "#1c1c1c",
+          "tooltipFontSize": 10
+        },
+        "direction": "ltr",
+        "consentScreen": {
+          "enabled": false,
+          "title": "User Agreement",
+          "message": "By using this chatbot, you agree to our\n<p><a href='/terms' target='_blank' style='color: black; text-decoration: underline; text-decoration-color: black;'>Terms & Conditions</a></p>",
+          "textColor": "#1e1e1f",
+          "acceptButtonColor": "#f36539",
+          "acceptButtonTextColor": "#ffffff",
+          "acceptButtonText": "Agree & Start Chatting",
+          "backgroundColor": "#ffffff",
+          "backdropColor": "#00000"
+        },
+        "chatWindow": {
+          "borderRadiusStyle": "rounded",
+          "avatarBorderRadius": 50,
+          "messageBorderRadius": 12,
+          "showTitle": true,
+          "title": "Trợ lý hành chính Công an tỉnh Hưng Yên",
+          "titleAvatarSrc": "https://sf-static.upanhlaylink.com/img/image_2025102896c48e9c5c3d4f523262a1e775b4e705.jpg",
+          "avatarSize": 46,
+          "welcomeMessage": "Tôi là Chatbot \"Trợ lý hành chính Công an tỉnh Hưng Yên\", nếu có bất kỳ thắc mắc nào về các thủ tục hành chính thuộc thẩm quyền quản lý của lực lượng Công an, hãy nhắn tin cho tôi để nhận được giải đáp.",
+          "errorMessage": "Lỗi hệ thống, vui lòng thử lại trong giây lát. Xin cảm ơn.",
+          "backgroundColor": "#fbf7ee",
+          "height": 550,
+          "width": 400,
+          "fontSize": 14,
+          "starterPromptFontSize": 15,
+          "renderHTML": false,
+          "clearChatOnReload": false,
+          "showScrollbar": false,
+          "botMessage": {
+            "backgroundColor": "#ffffff",
+            "textColor": "#050505",
+            "showAvatar": true,
+            "avatarSrc": "https://sf-static.upanhlaylink.com/img/image_20251028bd038f091f72540d867045f21d858b46.jpg",
+            "showCopyToClipboardIcon": false
+          },
+          "userMessage": {
+            "backgroundColor": "#991b1b",
+            "textColor": "#ffffff",
+            "showAvatar": true,
+            "avatarSrc": "https://www.svgrepo.com/show/532363/user-alt-1.svg"
+          },
+          "textInput": {
+            "placeholder": "Nhập câu hỏi của bạn ...",
+            "backgroundColor": "#ffffff",
+            "textColor": "#1e1e1f",
+            "sendButtonColor": "#b91c1c",
+            "maxChars": 1000,
+            "maxCharsWarningMessage": "Bạn đã vượt quá giới hạn ký tự. Vui lòng nhập ít hơn 1000 ký tự.",
+            "autoFocus": false,
+            "borderRadius": 21,
+            "sendButtonBorderRadius": 40
           }
-        })
+        }
       }
-    </script>
-  </head>
-  <body>
-    <div id="root"></div>
-    <script type="module" src="/src/main.tsx"></script>
-  </body>
+    });
+  </script>
+</body>
+
 </html>

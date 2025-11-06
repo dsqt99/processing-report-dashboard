@@ -96,14 +96,17 @@ services:
       - N8N_PORT=5678
       - N8N_PROTOCOL=https
       - N8N_EDITOR_BASE_URL=https://n8n-hungyen.cahy.io.vn
-      - WEBHOOK_URL=https://n8n-hungyen.cahy.io.vn
+      - WEBHOOK_URL=https://traefik/n8n-hungyen.cahy.io.vn
       - GENERIC_TIMEZONE=Asia/Ho_Chi_Minh
       - N8N_ENFORCE_SETTINGS_FILE_PERMISSIONS=true
       - N8N_SECURE_COOKIE=true
-      - EXPRESS_TRUST_PROXY=true
       - N8N_RUNNERS_ENABLED=true
       - N8N_DEFAULT_BINARY_DATA_MODE=default
       - N8N_PAYLOAD_SIZE_MAX=1000
+      - N8N_TRUSTED_PROXIES=*
+      - N8N_DIAGNOSTICS_ENABLED=false
+      - N8N_VERSION_NOTIFICATIONS_ENABLED=false
+      - N8N_PERSONALIZATION_ENABLED=false
     volumes:
       - ../n8n-docker/data:/home/node/.n8n
     restart: unless-stopped
